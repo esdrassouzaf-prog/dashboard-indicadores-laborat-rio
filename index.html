@@ -784,8 +784,9 @@
             let totalAprovados = 0;
             let totalReprovados = 0;
             
-            // CORREÇÃO 1: Pegar todos os lotes únicos que aparecem nas análises filtradas
-            const lotesUnicos = new Set(dadosFiltrados.map(a => a.lote));
+            // CORREÇÃO: Pegar TODOS os lotes da planilha de lotes, não só os com análises
+            const todosLotes = new Set(lotesData.map(l => l.lote));
+            const lotesComAnalise = new Set(dadosFiltrados.map(a => a.lote));
             
             const analisesPorLote = {};
             const analisesPorResponsavel = {};
@@ -815,14 +816,13 @@
                 analisesPorData[dataKey].total++;
                 if (status.aprovado) analisesPorData[dataKey].aprov++;
                 
-                // Dados por cor - CORREÇÃO 2: Contar quantidade de análises, não somar número das caixas
+                // Dados por cor - Contar quantidade de análises
                 if (lote) {
                     const cor = lote.cor;
                     if (!dadosPorCor[cor]) {
                         dadosPorCor[cor] = { lotes: new Set(), totalAnalises: 0, aprovados: 0, total: 0 };
                     }
                     dadosPorCor[cor].lotes.add(a.lote);
-                    // CORREÇÃO: Incrementar contagem de análises (não somar o número da caixa)
                     dadosPorCor[cor].totalAnalises++;
                     dadosPorCor[cor].total++;
                     if (status.aprovado) dadosPorCor[cor].aprovados++;
@@ -836,11 +836,10 @@
             document.getElementById('kpiAprovacao').textContent = taxaAprovacao + '%';
             document.getElementById('kpiReprovacao').textContent = taxaReprovacao + '%';
             document.getElementById('kpiTotalAnalises').textContent = total;
-            document.getElementById('kpiLotes').textContent = lotesUnicos.size;
             
-            // CORREÇÃO: Média de análises por lote (não caixas)
-            const mediaAnalises = lotesUnicos.size > 0 ? (total / lotesUnicos.size).toFixed(1) : 0;
-            document.getElementById('kpiMediaCaixas').textContent = `Média: ${mediaAnalises} análises/lote`;
+            // CORREÇÃO: Mostrar todos os lotes cadastrados, com indicador de quantos têm análise
+            document.getElementById('kpiLotes').textContent = todosLotes.size;
+            document.getElementById('kpiMediaCaixas').textContent = `${lotesComAnalise.size} com análise de ${todosLotes.size} cadastrados`;
 
             atualizarGraficos(analisesPorData, analisesPorResponsavel);
             atualizarGraficoTeste();
@@ -1022,12 +1021,11 @@
         function atualizarTabelaLotesCor(dadosPorCor) {
             const tbody = document.querySelector('#tabelaLotesCor tbody');
             
-            // CORREÇÃO: Usar totalAnalises em vez de totalCaixas
             const dadosArray = Object.entries(dadosPorCor).map(([cor, dados]) => ({
                 cor,
                 qtdLotes: dados.lotes.size,
-                totalAnalises: dados.totalAnalises,  // CORREÇÃO: quantidade de análises
-                mediaAnalises: (dados.totalAnalises / dados.lotes.size).toFixed(1),  // CORREÇÃO: média de análises
+                totalAnalises: dados.totalAnalises,
+                mediaAnalises: (dados.totalAnalises / dados.lotes.size).toFixed(1),
                 taxaAprov: ((dados.aprovados / dados.total) * 100).toFixed(1)
             })).sort((a, b) => b.qtdLotes - a.qtdLotes);
             
