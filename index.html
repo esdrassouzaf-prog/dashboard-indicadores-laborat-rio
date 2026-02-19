@@ -97,7 +97,6 @@
             50% { opacity: 0.5; }
         }
 
-        /* KPIs Grid */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -138,7 +137,6 @@
         .kpi-card.aprovacao::before { background: var(--success); }
         .kpi-card.reprovacao::before { background: var(--danger); }
         .kpi-card.analises::before { background: var(--primary); }
-        .kpi-card.tempo::before { background: var(--secondary); }
         .kpi-card.lotes::before { background: var(--info); }
         .kpi-card.responsaveis::before { background: var(--warning); }
 
@@ -170,7 +168,6 @@
         .kpi-card.aprovacao .kpi-icon { background: #d1fae5; }
         .kpi-card.reprovacao .kpi-icon { background: #fee2e2; }
         .kpi-card.analises .kpi-icon { background: #dbeafe; }
-        .kpi-card.tempo .kpi-icon { background: #fef3c7; }
         .kpi-card.lotes .kpi-icon { background: #cffafe; }
         .kpi-card.responsaveis .kpi-icon { background: #ffedd5; }
 
@@ -186,19 +183,6 @@
             color: #6b7280;
         }
 
-        .kpi-trend {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        .kpi-trend.positive { color: var(--success); }
-        .kpi-trend.negative { color: var(--danger); }
-
-        /* Charts Grid */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -233,7 +217,6 @@
             height: 300px;
         }
 
-        /* Tabelas */
         .table-card {
             background: var(--card);
             border-radius: 20px;
@@ -272,19 +255,6 @@
             background: #f9fafb;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-success { background: #d1fae5; color: #065f46; }
-        .badge-danger { background: #fee2e2; color: #991b1b; }
-        .badge-warning { background: #fef3c7; color: #92400e; }
-
-        /* Filtros */
         .filter-bar {
             background: var(--card);
             border-radius: 16px;
@@ -412,6 +382,37 @@
             font-size: 0.85rem;
             font-weight: 600;
         }
+
+        .stats-box {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stats-box .stat {
+            border-right: 1px solid var(--border);
+        }
+
+        .stats-box .stat:last-child {
+            border-right: none;
+        }
+
+        .stats-box .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stats-box .stat-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -468,15 +469,6 @@
                     <option value="">Todos</option>
                 </select>
             </div>
-            <div class="filter-group">
-                <label>Tipo de Brilho</label>
-                <select id="filtroBrilho">
-                    <option value="">Todos</option>
-                    <option value="BRILHANTE">Brilhante</option>
-                    <option value="SEMI BRILHO">Semi Brilho</option>
-                    <option value="FOSCO">Fosco</option>
-                </select>
-            </div>
             <button class="btn btn-primary" onclick="atualizarDashboard()">
                 🔄 Atualizar
             </button>
@@ -491,9 +483,6 @@
                 </div>
                 <div class="kpi-value" id="kpiAprovacao">0%</div>
                 <div class="kpi-subtitle">Análises dentro da especificação</div>
-                <div class="kpi-trend positive" id="trendAprovacao">
-                    ↑ vs período anterior
-                </div>
             </div>
 
             <div class="kpi-card reprovacao">
@@ -503,9 +492,6 @@
                 </div>
                 <div class="kpi-value" id="kpiReprovacao">0%</div>
                 <div class="kpi-subtitle">Análises fora da especificação</div>
-                <div class="kpi-trend negative" id="trendReprovacao">
-                    ↓ meta: < 5%
-                </div>
             </div>
 
             <div class="kpi-card analises">
@@ -515,9 +501,6 @@
                 </div>
                 <div class="kpi-value" id="kpiTotalAnalises">0</div>
                 <div class="kpi-subtitle">No período selecionado</div>
-                <div class="kpi-trend positive" id="trendAnalises">
-                    ↑ média diária
-                </div>
             </div>
 
             <div class="kpi-card lotes">
@@ -526,68 +509,101 @@
                     <div class="kpi-icon">📦</div>
                 </div>
                 <div class="kpi-value" id="kpiLotes">0</div>
-                <div class="kpi-subtitle">Lotes únicos no período</div>
-                <div class="kpi-subtitle" id="kpiMediaCaixas">
-                    Média: 0 caixas/lote
-                </div>
-            </div>
-
-            <div class="kpi-card tempo">
-                <div class="kpi-header">
-                    <span class="kpi-title">Tempo Médio</span>
-                    <div class="kpi-icon">⏱️</div>
-                </div>
-                <div class="kpi-value" id="kpiTempoMedio">0h</div>
-                <div class="kpi-subtitle">Entre análises do mesmo lote</div>
-                <div class="kpi-subtitle" id="kpiUltimaAnalise">
-                    Última: --
-                </div>
-            </div>
-
-            <div class="kpi-card responsaveis">
-                <div class="kpi-header">
-                    <span class="kpi-title">Mais Ativo</span>
-                    <div class="kpi-icon">👨‍🔬</div>
-                </div>
-                <div class="kpi-value" id="kpiTopResponsavel" style="font-size: 1.5rem;">--</div>
-                <div class="kpi-subtitle" id="kpiTopResponsavelCount">
-                    0 análises
-                </div>
-                <div class="kpi-subtitle">
-                    Responsável do período
-                </div>
+                <div class="kpi-subtitle" id="kpiMediaCaixas">Média: 0 caixas/lote</div>
             </div>
         </div>
 
         <!-- Gráficos -->
         <div class="charts-grid">
+            <!-- Gráfico 1: Evolução por Data -->
             <div class="chart-card">
-                <h3>📈 Evolução de Aprovação/Reprovação</h3>
+                <h3>📈 Evolução de Aprovação/Reprovação por Data</h3>
                 <div class="chart-container">
                     <canvas id="chartEvolucao"></canvas>
                 </div>
             </div>
 
+            <!-- Gráfico 2: Análise por Teste -->
             <div class="chart-card">
-                <h3>🎨 Desempenho por Tipo de Brilho</h3>
+                <h3>🧪 Análise por Tipo de Teste</h3>
+                <div class="filter-group" style="margin-bottom: 15px;">
+                    <label>Selecione o Teste</label>
+                    <select id="filtroTeste" onchange="atualizarGraficoTeste()">
+                        <option value="cor">Teste de Cor</option>
+                        <option value="brilho">Teste de Brilho</option>
+                        <option value="camada">Teste de Camada</option>
+                        <option value="impacto">Teste de Impacto</option>
+                        <option value="mandril">Teste de Mandril</option>
+                        <option value="grade">Teste de Grade</option>
+                        <option value="peneira">Teste de Peneira</option>
+                        <option value="mek">Teste de MEK</option>
+                    </select>
+                </div>
+                <div class="stats-box" id="statsTeste">
+                    <div class="stat">
+                        <div class="stat-value" id="statMedia">0</div>
+                        <div class="stat-label">Média por Lote</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="stat-label">Total Análises</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statLotes">0</div>
+                        <div class="stat-label">Lotes com Teste</div>
+                    </div>
+                </div>
                 <div class="chart-container">
-                    <canvas id="chartBrilho"></canvas>
+                    <canvas id="chartTeste"></canvas>
                 </div>
             </div>
 
+            <!-- Gráfico 3: Análises por Período -->
             <div class="chart-card">
-                <h3>📊 Distribuição por Teste</h3>
+                <h3>📊 Análises por Período</h3>
+                <div class="filter-group" style="margin-bottom: 15px;">
+                    <label>Agrupar por</label>
+                    <select id="filtroPeriodo" onchange="atualizarGraficoPeriodo()">
+                        <option value="dia">Dia</option>
+                        <option value="semana">Semana</option>
+                        <option value="mes" selected>Mês</option>
+                    </select>
+                </div>
                 <div class="chart-container">
-                    <canvas id="chartTestes"></canvas>
+                    <canvas id="chartPeriodo"></canvas>
                 </div>
             </div>
 
+            <!-- Gráfico 4: Ranking de Responsáveis -->
             <div class="chart-card">
                 <h3>👥 Análises por Responsável</h3>
                 <div class="chart-container">
                     <canvas id="chartResponsaveis"></canvas>
                 </div>
             </div>
+        </div>
+
+        <!-- Tabela de Lotes/Cor -->
+        <div class="table-card">
+            <h3>📋 Lotes por Cor - Quantidade e Média de Caixas</h3>
+            <table class="data-table" id="tabelaLotesCor">
+                <thead>
+                    <tr>
+                        <th>Cor</th>
+                        <th>Quantidade de Lotes</th>
+                        <th>Total de Caixas Analisadas</th>
+                        <th>Média de Caixas/Lote</th>
+                        <th>Taxa de Aprovação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #6b7280;">
+                            Carregue os dados para visualizar
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- Tabela de Lotes Problemáticos -->
@@ -613,44 +629,18 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Tabela de Últimas Análises -->
-        <div class="table-card">
-            <h3>📝 Últimas Análises Realizadas</h3>
-            <table class="data-table" id="tabelaUltimasAnalises">
-                <thead>
-                    <tr>
-                        <th>Data/Hora</th>
-                        <th>Lote</th>
-                        <th>Caixa</th>
-                        <th>Responsável</th>
-                        <th>Cor (ΔE)</th>
-                        <th>Brilho</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: #6b7280;">
-                            Carregue os dados para visualizar
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
     <script>
-        // Configuração
         const SCRIPT_URL_KEY = 'indicadores_script_url';
         let SCRIPT_URL = localStorage.getItem(SCRIPT_URL_KEY) || '';
         let analisesData = [];
         let lotesData = [];
         let charts = {};
+        let dadosFiltrados = [];
 
-        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             if (SCRIPT_URL) {
                 document.getElementById('scriptUrl').value = SCRIPT_URL;
@@ -659,7 +649,6 @@
                 carregarDados();
             }
             
-            // Definir datas padrão (últimos 30 dias)
             const hoje = new Date();
             const trintaDiasAtras = new Date(hoje.getTime() - (30 * 24 * 60 * 60 * 1000));
             document.getElementById('filtroDataFim').valueAsDate = hoje;
@@ -688,7 +677,6 @@
             document.getElementById('loadingOverlay').style.display = 'flex';
             
             try {
-                // Buscar análises
                 const respAnalises = await fetch(`${SCRIPT_URL}?action=getAnalises`);
                 const dataAnalises = await respAnalises.json();
                 
@@ -696,7 +684,6 @@
                     analisesData = dataAnalises.data;
                 }
 
-                // Buscar lotes
                 const respLotes = await fetch(`${SCRIPT_URL}?action=getLotes`);
                 const dataLotes = await respLotes.json();
                 
@@ -704,7 +691,6 @@
                     lotesData = dataLotes.data;
                 }
 
-                // Preencher filtro de responsáveis
                 const responsaveis = [...new Set(analisesData.map(a => a.responsavel))].filter(r => r);
                 const selectResp = document.getElementById('filtroResponsavel');
                 selectResp.innerHTML = '<option value="">Todos</option>';
@@ -741,82 +727,57 @@
             const dataInicio = document.getElementById('filtroDataInicio').value;
             const dataFim = document.getElementById('filtroDataFim').value;
             const responsavel = document.getElementById('filtroResponsavel').value;
-            const brilho = document.getElementById('filtroBrilho').value;
 
             return analisesData.filter(a => {
-                // Filtro de data
                 if (dataInicio && a.data < dataInicio) return false;
                 if (dataFim && a.data > dataFim) return false;
-                
-                // Filtro de responsável
                 if (responsavel && a.responsavel !== responsavel) return false;
-                
-                // Filtro de brilho (precisa buscar no lote)
-                if (brilho) {
-                    const lote = lotesData.find(l => l.lote === a.lote);
-                    if (!lote || lote.brilho.toUpperCase() !== brilho) return false;
-                }
-                
                 return true;
             });
         }
 
         function calcularStatus(analise, lote) {
             const desvios = [];
-            
-            // Validar Cor (ΔE ≤ 2,0)
             const corVal = parseFloat(analise.testes.cor);
-            if (!isNaN(corVal) && corVal > 2.0) {
-                desvios.push('Cor');
-            }
+            if (!isNaN(corVal) && corVal > 2.0) desvios.push('Cor');
             
-            // Validar Brilho
             if (lote) {
                 const brilhoVal = parseFloat(analise.testes.brilho);
                 const brilhoTipo = lote.brilho.toUpperCase();
-                
                 if (!isNaN(brilhoVal)) {
                     if (brilhoTipo === 'BRILHANTE' && brilhoVal <= 90) desvios.push('Brilho');
                     else if (brilhoTipo === 'SEMI BRILHO' && (brilhoVal < 40 || brilhoVal > 80)) desvios.push('Brilho');
                     else if (brilhoTipo === 'FOSCO' && brilhoVal > 15) desvios.push('Brilho');
                 }
                 
-                // Validar Camada
                 const camadaVal = parseFloat(analise.testes.camada);
                 const supTipo = lote.superficie.toUpperCase();
-                
                 if (!isNaN(camadaVal)) {
                     if (supTipo === 'LISO' && (camadaVal < 60 || camadaVal > 90)) desvios.push('Camada');
                     else if (supTipo === 'TEXTURIZADO' && (camadaVal < 80 || camadaVal > 120)) desvios.push('Camada');
                     else if (supTipo === 'MICROTEXTURA' && (camadaVal < 70 || camadaVal > 100)) desvios.push('Camada');
                 }
             }
-            
-            return {
-                aprovado: desvios.length === 0,
-                desvios: desvios
-            };
+            return { aprovado: desvios.length === 0, desvios };
         }
 
         function atualizarDashboard() {
-            const dados = filtrarDados();
+            dadosFiltrados = filtrarDados();
             
-            if (dados.length === 0) {
+            if (dadosFiltrados.length === 0) {
                 showToast('Nenhum dado encontrado para o período/filtro selecionado', true);
                 return;
             }
 
-            // Calcular métricas
             let totalAprovados = 0;
             let totalReprovados = 0;
             const lotesUnicos = new Set();
             const analisesPorLote = {};
             const analisesPorResponsavel = {};
             const analisesPorData = {};
-            const desempenhoBrilho = { 'BRILHANTE': { total: 0, aprov: 0 }, 'SEMI BRILHO': { total: 0, aprov: 0 }, 'FOSCO': { total: 0, aprov: 0 } };
-            const desempenhoTestes = { cor: 0, brilho: 0, camada: 0, impacto: 0, mandril: 0, grade: 0, peneira: 0, mek: 0 };
+            const dadosPorCor = {};
 
-            dados.forEach(a => {
+            dadosFiltrados.forEach(a => {
                 const lote = lotesData.find(l => l.lote === a.lote);
                 const status = calcularStatus(a, lote);
                 
@@ -825,39 +786,36 @@
                 
                 lotesUnicos.add(a.lote);
                 
-                // Agrupar por lote
                 if (!analisesPorLote[a.lote]) {
                     analisesPorLote[a.lote] = { analises: [], desvios: 0 };
                 }
                 analisesPorLote[a.lote].analises.push(a);
                 if (!status.aprovado) analisesPorLote[a.lote].desvios++;
                 
-                // Agrupar por responsável
                 analisesPorResponsavel[a.responsavel] = (analisesPorResponsavel[a.responsavel] || 0) + 1;
                 
-                // Agrupar por data
+                // Agrupar por data (apenas data, sem hora)
                 const dataKey = a.data;
-                if (!analisesPorData[dataKey]) analisesPorData[dataKey] = { total: 0, aprov: 0 };
+                if (!analisesPorData[dataKey]) {
+                    analisesPorData[dataKey] = { total: 0, aprov: 0 };
+                }
                 analisesPorData[dataKey].total++;
                 if (status.aprovado) analisesPorData[dataKey].aprov++;
                 
-                // Desempenho por brilho
+                // Dados por cor
                 if (lote) {
-                    const brilhoKey = lote.brilho.toUpperCase();
-                    if (desempenhoBrilho[brilhoKey]) {
-                        desempenhoBrilho[brilhoKey].total++;
-                        if (status.aprovado) desempenhoBrilho[brilhoKey].aprov++;
+                    const cor = lote.cor;
+                    if (!dadosPorCor[cor]) {
+                        dadosPorCor[cor] = { lotes: new Set(), totalCaixas: 0, aprovados: 0, total: 0 };
                     }
+                    dadosPorCor[cor].lotes.add(a.lote);
+                    dadosPorCor[cor].totalCaixas += a.caixa;
+                    dadosPorCor[cor].total++;
+                    if (status.aprovado) dadosPorCor[cor].aprovados++;
                 }
-                
-                // Contar testes preenchidos
-                Object.keys(a.testes).forEach(t => {
-                    if (a.testes[t]) desempenhoTestes[t]++;
-                });
             });
 
-            // Atualizar KPIs
-            const total = dados.length;
+            const total = dadosFiltrados.length;
             const taxaAprovacao = total > 0 ? ((totalAprovados / total) * 100).toFixed(1) : 0;
             const taxaReprovacao = total > 0 ? ((totalReprovados / total) * 100).toFixed(1) : 0;
             
@@ -866,56 +824,20 @@
             document.getElementById('kpiTotalAnalises').textContent = total;
             document.getElementById('kpiLotes').textContent = lotesUnicos.size;
             
-            // Média de caixas por lote
             const mediaCaixas = lotesUnicos.size > 0 ? (total / lotesUnicos.size).toFixed(1) : 0;
             document.getElementById('kpiMediaCaixas').textContent = `Média: ${mediaCaixas} caixas/lote`;
-            
-            // Top responsável
-            const topResp = Object.entries(analisesPorResponsavel)
-                .sort((a, b) => b[1] - a[1])[0];
-            if (topResp) {
-                document.getElementById('kpiTopResponsavel').textContent = topResp[0].split(' ')[0];
-                document.getElementById('kpiTopResponsavelCount').textContent = `${topResp[1]} análises`;
-            }
-            
-            // Tempo médio entre análises
-            const tempos = [];
-            Object.values(analisesPorLote).forEach(loteData => {
-                const ordenado = loteData.analises.sort((a, b) => 
-                    new Date(a.data + 'T' + a.hora) - new Date(b.data + 'T' + b.hora)
-                );
-                for (let i = 1; i < ordenado.length; i++) {
-                    const diff = new Date(ordenado[i].data + 'T' + ordenado[i].hora) - 
-                                new Date(ordenado[i-1].data + 'T' + ordenado[i-1].hora);
-                    tempos.push(diff / (1000 * 60 * 60)); // em horas
-                }
-            });
-            const tempoMedio = tempos.length > 0 ? 
-                (tempos.reduce((a, b) => a + b, 0) / tempos.length).toFixed(1) : 0;
-            document.getElementById('kpiTempoMedio').textContent = tempoMedio + 'h';
-            
-            // Última análise
-            const ultima = dados.sort((a, b) => 
-                new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora)
-            )[0];
-            if (ultima) {
-                document.getElementById('kpiUltimaAnalise').textContent = 
-                    `Última: ${formatarData(ultima.data)} ${ultima.hora}`;
-            }
 
-            // Atualizar gráficos
-            atualizarGraficos(analisesPorData, desempenhoBrilho, desempenhoTestes, analisesPorResponsavel);
-            
-            // Atualizar tabelas
+            atualizarGraficos(analisesPorData, analisesPorResponsavel);
+            atualizarGraficoTeste();
+            atualizarGraficoPeriodo();
+            atualizarTabelaLotesCor(dadosPorCor);
             atualizarTabelaLotesProblematicos(analisesPorLote);
-            atualizarTabelaUltimasAnalises(dados);
         }
 
-        function atualizarGraficos(dadosPorData, desempenhoBrilho, desempenhoTestes, dadosResp) {
-            // Destruir gráficos anteriores
+        function atualizarGraficos(dadosPorData, dadosResp) {
             Object.values(charts).forEach(c => c.destroy());
             
-            // Gráfico de evolução
+            // Gráfico de evolução por data
             const datas = Object.keys(dadosPorData).sort();
             const ctxEvolucao = document.getElementById('chartEvolucao').getContext('2d');
             charts.evolucao = new Chart(ctxEvolucao, {
@@ -935,7 +857,7 @@
                     }, {
                         label: 'Total Análises',
                         data: datas.map(d => dadosPorData[d].total),
-                        borderColor: '#3b82f6',
+                        borderColor: '#ef4444',
                         backgroundColor: 'transparent',
                         yAxisID: 'y1',
                         tension: 0.4
@@ -952,54 +874,7 @@
                 }
             });
 
-            // Gráfico por brilho
-            const ctxBrilho = document.getElementById('chartBrilho').getContext('2d');
-            charts.brilho = new Chart(ctxBrilho, {
-                type: 'bar',
-                data: {
-                    labels: ['Brilhante', 'Semi Brilho', 'Fosco'],
-                    datasets: [{
-                        label: 'Taxa de Aprovação (%)',
-                        data: [
-                            desempenhoBrilho['BRILHANTE'].total > 0 ? 
-                                ((desempenhoBrilho['BRILHANTE'].aprov / desempenhoBrilho['BRILHANTE'].total) * 100).toFixed(1) : 0,
-                            desempenhoBrilho['SEMI BRILHO'].total > 0 ? 
-                                ((desempenhoBrilho['SEMI BRILHO'].aprov / desempenhoBrilho['SEMI BRILHO'].total) * 100).toFixed(1) : 0,
-                            desempenhoBrilho['FOSCO'].total > 0 ? 
-                                ((desempenhoBrilho['FOSCO'].aprov / desempenhoBrilho['FOSCO'].total) * 100).toFixed(1) : 0
-                        ],
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#6b7280']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, max: 100 } }
-                }
-            });
-
-            // Gráfico de testes
-            const ctxTestes = document.getElementById('chartTestes').getContext('2d');
-            charts.testes = new Chart(ctxTestes, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Cor', 'Brilho', 'Camada', 'Impacto', 'Mandril', 'Grade', 'Peneira', 'MEK'],
-                    datasets: [{
-                        data: Object.values(desempenhoTestes),
-                        backgroundColor: [
-                            '#ef4444', '#f59e0b', '#10b981', '#3b82f6',
-                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right' } }
-                }
-            });
-
-            // Gráfico de responsáveis
+            // Ranking de responsáveis
             const respOrdenado = Object.entries(dadosResp).sort((a, b) => b[1] - a[1]).slice(0, 5);
             const ctxResp = document.getElementById('chartResponsaveis').getContext('2d');
             charts.responsaveis = new Chart(ctxResp, {
@@ -1018,6 +893,142 @@
                     indexAxis: 'y'
                 }
             });
+        }
+
+        function atualizarGraficoTeste() {
+            const testeSelecionado = document.getElementById('filtroTeste').value;
+            const valoresPorLote = {};
+            const contagemPorLote = {};
+            
+            dadosFiltrados.forEach(a => {
+                const val = parseFloat(a.testes[testeSelecionado]);
+                if (!isNaN(val)) {
+                    if (!valoresPorLote[a.lote]) {
+                        valoresPorLote[a.lote] = 0;
+                        contagemPorLote[a.lote] = 0;
+                    }
+                    valoresPorLote[a.lote] += val;
+                    contagemPorLote[a.lote]++;
+                }
+            });
+            
+            const medias = Object.keys(valoresPorLote).map(lote => ({
+                lote,
+                media: (valoresPorLote[lote] / contagemPorLote[lote]).toFixed(2)
+            })).sort((a, b) => b.media - a.media).slice(0, 10);
+            
+            // Atualizar estatísticas
+            const totalLotes = Object.keys(valoresPorLote).length;
+            const mediaGeral = totalLotes > 0 ? 
+                (Object.values(valoresPorLote).reduce((a, b) => a + b, 0) / 
+                 Object.values(contagemPorLote).reduce((a, b) => a + b, 0)).toFixed(2) : 0;
+            
+            document.getElementById('statMedia').textContent = mediaGeral;
+            document.getElementById('statTotal').textContent = dadosFiltrados.filter(a => a.testes[testeSelecionado]).length;
+            document.getElementById('statLotes').textContent = totalLotes;
+            
+            // Atualizar gráfico
+            if (charts.teste) charts.teste.destroy();
+            
+            const ctxTeste = document.getElementById('chartTeste').getContext('2d');
+            charts.teste = new Chart(ctxTeste, {
+                type: 'bar',
+                data: {
+                    labels: medias.map(m => m.lote),
+                    datasets: [{
+                        label: `Média de ${testeSelecionado.toUpperCase()}`,
+                        data: medias.map(m => m.media),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function atualizarGraficoPeriodo() {
+            const agrupamento = document.getElementById('filtroPeriodo').value;
+            const dadosAgrupados = {};
+            
+            dadosFiltrados.forEach(a => {
+                let chave;
+                const data = new Date(a.data);
+                
+                if (agrupamento === 'dia') {
+                    chave = a.data;
+                } else if (agrupamento === 'semana') {
+                    const semana = getSemanaAno(data);
+                    chave = `Sem ${semana}`;
+                } else { // mes
+                    chave = `${data.getMonth() + 1}/${data.getFullYear()}`;
+                }
+                
+                dadosAgrupados[chave] = (dadosAgrupados[chave] || 0) + 1;
+            });
+            
+            const chavesOrdenadas = Object.keys(dadosAgrupados).sort();
+            
+            if (charts.periodo) charts.periodo.destroy();
+            
+            const ctxPeriodo = document.getElementById('chartPeriodo').getContext('2d');
+            charts.periodo = new Chart(ctxPeriodo, {
+                type: 'bar',
+                data: {
+                    labels: chavesOrdenadas,
+                    datasets: [{
+                        label: 'Quantidade de Análises',
+                        data: chavesOrdenadas.map(k => dadosAgrupados[k]),
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function getSemanaAno(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function atualizarTabelaLotesCor(dadosPorCor) {
+            const tbody = document.querySelector('#tabelaLotesCor tbody');
+            
+            const dadosArray = Object.entries(dadosPorCor).map(([cor, dados]) => ({
+                cor,
+                qtdLotes: dados.lotes.size,
+                totalCaixas: dados.totalCaixas,
+                mediaCaixas: (dados.totalCaixas / dados.lotes.size).toFixed(1),
+                taxaAprov: ((dados.aprovados / dados.total) * 100).toFixed(1)
+            })).sort((a, b) => b.qtdLotes - a.qtdLotes);
+            
+            if (dadosArray.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado encontrado</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = dadosArray.map(item => `
+                <tr>
+                    <td><strong>${item.cor}</strong></td>
+                    <td>${item.qtdLotes}</td>
+                    <td>${item.totalCaixas}</td>
+                    <td>${item.mediaCaixas}</td>
+                    <td>${item.taxaAprov}%</td>
+                </tr>
+            `).join('');
         }
 
         function atualizarTabelaLotesProblematicos(analisesPorLote) {
@@ -1039,11 +1050,6 @@
             
             tbody.innerHTML = lotesArray.map(item => {
                 const loteInfo = lotesData.find(l => l.lote === item.lote);
-                const statusClass = item.taxaReprov > 20 ? 'badge-danger' : 
-                                   item.taxaReprov > 10 ? 'badge-warning' : 'badge-success';
-                const statusText = item.taxaReprov > 20 ? 'Crítico' : 
-                                  item.taxaReprov > 10 ? 'Atenção' : 'Controlável';
-                
                 return `
                     <tr>
                         <td><strong>${item.lote}</strong></td>
@@ -1051,33 +1057,7 @@
                         <td>${item.analises.length}</td>
                         <td>${item.desvios}</td>
                         <td>${item.taxaReprov}%</td>
-                        <td><span class="badge ${statusClass}">${statusText}</span></td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function atualizarTabelaUltimasAnalises(dados) {
-            const tbody = document.querySelector('#tabelaUltimasAnalises tbody');
-            const ultimas = dados
-                .sort((a, b) => new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora))
-                .slice(0, 10);
-            
-            tbody.innerHTML = ultimas.map(a => {
-                const lote = lotesData.find(l => l.lote === a.lote);
-                const status = calcularStatus(a, lote);
-                const statusClass = status.aprovado ? 'badge-success' : 'badge-danger';
-                const statusText = status.aprovado ? 'Aprovado' : 'Reprovado';
-                
-                return `
-                    <tr>
-                        <td>${formatarData(a.data)} ${a.hora}</td>
-                        <td>${a.lote}</td>
-                        <td>${a.caixa}</td>
-                        <td>${a.responsavel}</td>
-                        <td>${a.testes.cor || '-'}</td>
-                        <td>${a.testes.brilho || '-'}</td>
-                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td><span class="badge badge-danger">Crítico</span></td>
                     </tr>
                 `;
             }).join('');
