@@ -413,6 +413,18 @@
             color: #6b7280;
             margin-top: 5px;
         }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
 <body>
@@ -509,7 +521,7 @@
                     <div class="kpi-icon">📦</div>
                 </div>
                 <div class="kpi-value" id="kpiLotes">0</div>
-                <div class="kpi-subtitle" id="kpiMediaCaixas">Média: 0 caixas/lote</div>
+                <div class="kpi-subtitle" id="kpiMediaCaixas">Média: 0 análises/lote</div>
             </div>
         </div>
 
@@ -585,14 +597,14 @@
 
         <!-- Tabela de Lotes/Cor -->
         <div class="table-card">
-            <h3>📋 Lotes por Cor - Quantidade e Média de Caixas</h3>
+            <h3>📋 Lotes por Cor - Quantidade e Total de Análises</h3>
             <table class="data-table" id="tabelaLotesCor">
                 <thead>
                     <tr>
                         <th>Cor</th>
                         <th>Quantidade de Lotes</th>
-                        <th>Total de Caixas Analisadas</th>
-                        <th>Média de Caixas/Lote</th>
+                        <th>Total de Análises</th>
+                        <th>Média de Análises/Lote</th>
                         <th>Taxa de Aprovação</th>
                     </tr>
                 </thead>
@@ -771,7 +783,10 @@
 
             let totalAprovados = 0;
             let totalReprovados = 0;
-            const lotesUnicos = new Set();
+            
+            // CORREÇÃO 1: Pegar todos os lotes únicos que aparecem nas análises filtradas
+            const lotesUnicos = new Set(dadosFiltrados.map(a => a.lote));
+            
             const analisesPorLote = {};
             const analisesPorResponsavel = {};
             const analisesPorData = {};
@@ -783,8 +798,6 @@
                 
                 if (status.aprovado) totalAprovados++;
                 else totalReprovados++;
-                
-                lotesUnicos.add(a.lote);
                 
                 if (!analisesPorLote[a.lote]) {
                     analisesPorLote[a.lote] = { analises: [], desvios: 0 };
@@ -802,14 +815,15 @@
                 analisesPorData[dataKey].total++;
                 if (status.aprovado) analisesPorData[dataKey].aprov++;
                 
-                // Dados por cor
+                // Dados por cor - CORREÇÃO 2: Contar quantidade de análises, não somar número das caixas
                 if (lote) {
                     const cor = lote.cor;
                     if (!dadosPorCor[cor]) {
-                        dadosPorCor[cor] = { lotes: new Set(), totalCaixas: 0, aprovados: 0, total: 0 };
+                        dadosPorCor[cor] = { lotes: new Set(), totalAnalises: 0, aprovados: 0, total: 0 };
                     }
                     dadosPorCor[cor].lotes.add(a.lote);
-                    dadosPorCor[cor].totalCaixas += a.caixa;
+                    // CORREÇÃO: Incrementar contagem de análises (não somar o número da caixa)
+                    dadosPorCor[cor].totalAnalises++;
                     dadosPorCor[cor].total++;
                     if (status.aprovado) dadosPorCor[cor].aprovados++;
                 }
@@ -824,8 +838,9 @@
             document.getElementById('kpiTotalAnalises').textContent = total;
             document.getElementById('kpiLotes').textContent = lotesUnicos.size;
             
-            const mediaCaixas = lotesUnicos.size > 0 ? (total / lotesUnicos.size).toFixed(1) : 0;
-            document.getElementById('kpiMediaCaixas').textContent = `Média: ${mediaCaixas} caixas/lote`;
+            // CORREÇÃO: Média de análises por lote (não caixas)
+            const mediaAnalises = lotesUnicos.size > 0 ? (total / lotesUnicos.size).toFixed(1) : 0;
+            document.getElementById('kpiMediaCaixas').textContent = `Média: ${mediaAnalises} análises/lote`;
 
             atualizarGraficos(analisesPorData, analisesPorResponsavel);
             atualizarGraficoTeste();
@@ -1007,11 +1022,12 @@
         function atualizarTabelaLotesCor(dadosPorCor) {
             const tbody = document.querySelector('#tabelaLotesCor tbody');
             
+            // CORREÇÃO: Usar totalAnalises em vez de totalCaixas
             const dadosArray = Object.entries(dadosPorCor).map(([cor, dados]) => ({
                 cor,
                 qtdLotes: dados.lotes.size,
-                totalCaixas: dados.totalCaixas,
-                mediaCaixas: (dados.totalCaixas / dados.lotes.size).toFixed(1),
+                totalAnalises: dados.totalAnalises,  // CORREÇÃO: quantidade de análises
+                mediaAnalises: (dados.totalAnalises / dados.lotes.size).toFixed(1),  // CORREÇÃO: média de análises
                 taxaAprov: ((dados.aprovados / dados.total) * 100).toFixed(1)
             })).sort((a, b) => b.qtdLotes - a.qtdLotes);
             
@@ -1024,8 +1040,8 @@
                 <tr>
                     <td><strong>${item.cor}</strong></td>
                     <td>${item.qtdLotes}</td>
-                    <td>${item.totalCaixas}</td>
-                    <td>${item.mediaCaixas}</td>
+                    <td>${item.totalAnalises}</td>
+                    <td>${item.mediaAnalises}</td>
                     <td>${item.taxaAprov}%</td>
                 </tr>
             `).join('');
