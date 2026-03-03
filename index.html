@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Controle de Correções | Desenvolvimento de Tintas</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
     <style>
         * {
             margin: 0;
@@ -34,6 +35,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .logo-section {
@@ -65,6 +68,24 @@
         .header-text p {
             color: #7f8c8d;
             font-size: 14px;
+        }
+
+        .auth-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e74c3c;
+        }
+
+        .status-indicator.connected {
+            background: #27ae60;
+            box-shadow: 0 0 10px #27ae60;
         }
 
         .grid {
@@ -133,9 +154,22 @@
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-secondary {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             margin-top: 10px;
+        }
+
+        .btn-auth {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
         }
 
         .search-section {
@@ -233,15 +267,43 @@
 
         .notification.success { background: #27ae60; }
         .notification.error { background: #e74c3c; }
+        .notification.info { background: #3498db; }
 
         .chart-container {
             margin-top: 30px;
             height: 300px;
         }
 
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .sync-info {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
         @media (max-width: 968px) {
             .grid {
                 grid-template-columns: 1fr;
+            }
+            header {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
@@ -256,12 +318,18 @@
                     <p>Laboratório de Desenvolvimento de Tintas</p>
                 </div>
             </div>
-            <div>
-                <button class="btn" onclick="exportToSheets()" style="width: auto; padding: 10px 20px; font-size: 14px;">
-                    📊 Exportar para Google Sheets
+            <div class="auth-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Desconectado</span>
+                <button class="btn btn-auth" id="authBtn" onclick="handleAuthClick()">
+                    Conectar Google
                 </button>
             </div>
         </header>
+
+        <div class="sync-info" id="syncInfo" style="display: none;">
+            <strong>✓ Conectado ao Google Sheets!</strong> Os dados estão sendo sincronizados automaticamente.
+        </div>
 
         <div class="grid">
             <!-- Formulário de Registro -->
@@ -316,7 +384,9 @@
                         <input type="time" id="hora" required>
                     </div>
 
-                    <button type="submit" class="btn">💾 Salvar Correção</button>
+                    <button type="submit" class="btn" id="submitBtn" disabled>
+                        💾 Salvar Correção
+                    </button>
                 </form>
             </div>
 
@@ -335,8 +405,8 @@
                             <div class="stat-label">Lotes em Desenvolvimento</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="mediaTempo">0h</div>
-                            <div class="stat-label">Tempo Médio por Lote</div>
+                            <div class="stat-value" id="mediaCorrecoes">0</div>
+                            <div class="stat-label">Média Correções/Lote</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="corMaisCorrecoes">-</div>
@@ -354,7 +424,9 @@
                     <h2>🔍 Pesquisar Correções</h2>
                     <div class="search-section">
                         <input type="text" id="searchInput" placeholder="Pesquisar por lote, cor, solicitante...">
-                        <button class="btn btn-secondary" onclick="pesquisar()">Pesquisar</button>
+                        <button class="btn btn-secondary" onclick="pesquisar()" id="searchBtn" disabled>
+                            Pesquisar
+                        </button>
                     </div>
                     
                     <div style="overflow-x: auto;">
@@ -371,7 +443,11 @@
                                 </tr>
                             </thead>
                             <tbody id="resultadosBody">
-                                <!-- Resultados serão inseridos aqui -->
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: #7f8c8d; padding: 40px;">
+                                        Conecte ao Google Sheets para visualizar os dados
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -383,65 +459,179 @@
     <div id="notification" class="notification"></div>
 
     <script>
-        // Dados armazenados localmente (simulando até integração com Google Sheets)
-        let correcoes = JSON.parse(localStorage.getItem('correcoes')) || [];
+        // CONFIGURAÇÕES DO GOOGLE SHEETS - SUBSTITUA AQUI
+        const CONFIG = {
+            API_KEY: 'AIzaSyABev_uVZpR56jd3PrJtpPF7lpKqKAitRM',
+            CLIENT_ID: '966953379568-vqpfac9u3iaedof5c3prdog2s1aueq9b.apps.googleusercontent.com',
+            SPREADSHEET_ID: '1speX2UQcXmCotqZplLtDESH1db93dZ0wKzR_nM9zzN4',
+            SCOPES: 'https://www.googleapis.com/auth/spreadsheets',
+            RANGE: 'Sheet1!A:H'
+        };
+
+        let correcoes = [];
         let chart;
+        let isAuthenticated = false;
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            // Definir data atual
             document.getElementById('data').valueAsDate = new Date();
-            
-            // Atualizar estatísticas
-            atualizarEstatisticas();
-            
-            // Inicializar gráfico
-            inicializarGrafico();
-            
-            // Carregar dados iniciais na tabela
-            atualizarTabela(correcoes);
+            handleClientLoad();
         });
 
-        // Formulário de submissão
+        // Carregar API do Google
+        function handleClientLoad() {
+            gapi.load('client:auth2', initClient);
+        }
+
+        function initClient() {
+            gapi.client.init({
+                apiKey: CONFIG.API_KEY,
+                clientId: CONFIG.CLIENT_ID,
+                scope: CONFIG.SCOPES,
+                discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4']
+            }).then(function() {
+                gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+            }).catch(function(error) {
+                console.error('Erro ao inicializar:', error);
+                showNotification('Erro ao conectar com Google. Recarregue a página.', 'error');
+            });
+        }
+
+        function updateSigninStatus(isSignedIn) {
+            isAuthenticated = isSignedIn;
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const authBtn = document.getElementById('authBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const searchBtn = document.getElementById('searchBtn');
+            const syncInfo = document.getElementById('syncInfo');
+
+            if (isSignedIn) {
+                statusIndicator.classList.add('connected');
+                statusText.textContent = 'Conectado';
+                authBtn.textContent = 'Desconectar';
+                submitBtn.disabled = false;
+                searchBtn.disabled = false;
+                syncInfo.style.display = 'block';
+                carregarDados();
+            } else {
+                statusIndicator.classList.remove('connected');
+                statusText.textContent = 'Desconectado';
+                authBtn.textContent = 'Conectar Google';
+                submitBtn.disabled = true;
+                searchBtn.disabled = true;
+                syncInfo.style.display = 'none';
+            }
+        }
+
+        function handleAuthClick() {
+            if (isAuthenticated) {
+                gapi.auth2.getAuthInstance().signOut();
+            } else {
+                gapi.auth2.getAuthInstance().signIn();
+            }
+        }
+
+        // Carregar dados da planilha
+        function carregarDados() {
+            showNotification('Carregando dados...', 'info');
+            
+            gapi.client.sheets.spreadsheets.values.get({
+                spreadsheetId: CONFIG.SPREADSHEET_ID,
+                range: CONFIG.RANGE
+            }).then(function(response) {
+                const range = response.result;
+                correcoes = [];
+                
+                if (range.values && range.values.length > 1) {
+                    // Pular cabeçalho (linha 0)
+                    for (let i = 1; i < range.values.length; i++) {
+                        const row = range.values[i];
+                        correcoes.push({
+                            id: row[0] || '',
+                            lote: row[1] || '',
+                            cor: row[2] || '',
+                            correcao: row[3] || '',
+                            solicitante: row[4] || '',
+                            responsavel: row[5] || '',
+                            data: row[6] || '',
+                            hora: row[7] || ''
+                        });
+                    }
+                }
+                
+                atualizarEstatisticas();
+                atualizarTabela(correcoes);
+                inicializarGrafico();
+                showNotification('Dados carregados com sucesso!', 'success');
+            }).catch(function(error) {
+                console.error('Erro ao carregar:', error);
+                showNotification('Erro ao carregar dados da planilha', 'error');
+            });
+        }
+
+        // Salvar nova correção
         document.getElementById('correcaoForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const novaCorrecao = {
-                id: Date.now(),
-                lote: document.getElementById('lote').value.toUpperCase(),
-                cor: document.getElementById('cor').value,
-                correcao: document.getElementById('correcao').value,
-                solicitante: document.getElementById('solicitante').value,
-                responsavel: document.getElementById('responsavel').value,
-                data: document.getElementById('data').value,
-                hora: document.getElementById('hora').value,
-                timestamp: new Date().toISOString()
-            };
-            
-            correcoes.push(novaCorrecao);
-            localStorage.setItem('correcoes', JSON.stringify(correcoes));
-            
-            showNotification('Correção registrada com sucesso!', 'success');
-            
-            // Limpar formulário
-            this.reset();
-            document.getElementById('data').valueAsDate = new Date();
-            
-            // Atualizar dashboard
-            atualizarEstatisticas();
-            atualizarTabela(correcoes);
-            atualizarGrafico();
+            if (!isAuthenticated) {
+                showNotification('Conecte-se primeiro!', 'error');
+                return;
+            }
+
+            const novaCorrecao = [
+                Date.now().toString(),
+                document.getElementById('lote').value.toUpperCase(),
+                document.getElementById('cor').value,
+                document.getElementById('correcao').value,
+                document.getElementById('solicitante').value,
+                document.getElementById('responsavel').value,
+                document.getElementById('data').value,
+                document.getElementById('hora').value
+            ];
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Salvando...';
+
+            gapi.client.sheets.spreadsheets.values.append({
+                spreadsheetId: CONFIG.SPREADSHEET_ID,
+                range: CONFIG.RANGE,
+                valueInputOption: 'USER_ENTERED',
+                insertDataOption: 'INSERT_ROWS',
+                resource: {
+                    values: [novaCorrecao]
+                }
+            }).then(function(response) {
+                showNotification('Correção salva com sucesso!', 'success');
+                
+                // Limpar formulário
+                document.getElementById('correcaoForm').reset();
+                document.getElementById('data').valueAsDate = new Date();
+                
+                // Recarregar dados
+                carregarDados();
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '💾 Salvar Correção';
+            }).catch(function(error) {
+                console.error('Erro ao salvar:', error);
+                showNotification('Erro ao salvar. Tente novamente.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '💾 Salvar Correção';
+            });
         });
 
         function atualizarEstatisticas() {
-            // Total de correções
             document.getElementById('totalCorrecoes').textContent = correcoes.length;
             
-            // Total de lotes únicos
             const lotesUnicos = [...new Set(correcoes.map(c => c.lote))];
             document.getElementById('totalLotes').textContent = lotesUnicos.length;
             
-            // Cor com mais correções
+            const media = lotesUnicos.length > 0 ? (correcoes.length / lotesUnicos.length).toFixed(1) : 0;
+            document.getElementById('mediaCorrecoes').textContent = media;
+            
             const corCount = {};
             correcoes.forEach(c => {
                 corCount[c.cor] = (corCount[c.cor] || 0) + 1;
@@ -449,10 +639,6 @@
             const corMaisCorrecoes = Object.keys(corCount).reduce((a, b) => 
                 corCount[a] > corCount[b] ? a : b, '-');
             document.getElementById('corMaisCorrecoes').textContent = corMaisCorrecoes;
-            
-            // Tempo médio (simplificado - pode ser ajustado conforme necessidade)
-            // Aqui você pode implementar lógica mais complexa baseada em datas de início e fim
-            document.getElementById('mediaTempo').textContent = 'Calc...';
         }
 
         function inicializarGrafico() {
@@ -462,19 +648,30 @@
             correcoes.forEach(c => {
                 corCount[c.cor] = (corCount[c.cor] || 0) + 1;
             });
-            
+
+            const coresPadrao = {
+                'AMARELO': '#ffd700', 'AZUL': '#0066cc', 'BEJE': '#f5f5dc',
+                'BRANCO': '#e0e0e0', 'CHAMPANHE': '#f7e7ce', 'CINZA': '#808080',
+                'LARANJA': '#ff6600', 'MARROM': '#8b4513', 'PRETO': '#000000',
+                'VERDE': '#228b22', 'VERMELHO': '#dc143c'
+            };
+
+            const labels = Object.keys(corCount);
+            const data = Object.values(corCount);
+            const backgroundColors = labels.map(cor => coresPadrao[cor] || '#999');
+
+            if (chart) {
+                chart.destroy();
+            }
+
             chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(corCount),
+                    labels: labels,
                     datasets: [{
                         label: 'Correções por Cor',
-                        data: Object.values(corCount),
-                        backgroundColor: [
-                            '#ffd700', '#0066cc', '#f5f5dc', '#ffffff', 
-                            '#f7e7ce', '#808080', '#ff6600', '#8b4513', 
-                            '#000000', '#228b22', '#dc143c'
-                        ],
+                        data: data,
+                        backgroundColor: backgroundColors,
                         borderColor: '#333',
                         borderWidth: 1
                     }]
@@ -495,22 +692,15 @@
             });
         }
 
-        function atualizarGrafico() {
-            const corCount = {};
-            correcoes.forEach(c => {
-                corCount[c.cor] = (corCount[c.cor] || 0) + 1;
-            });
-            
-            chart.data.labels = Object.keys(corCount);
-            chart.data.datasets[0].data = Object.values(corCount);
-            chart.update();
-        }
-
         function atualizarTabela(dados) {
             const tbody = document.getElementById('resultadosBody');
             tbody.innerHTML = '';
             
-            // Ordenar por data mais recente
+            if (dados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #7f8c8d;">Nenhuma correção registrada</td></tr>';
+                return;
+            }
+            
             const dadosOrdenados = [...dados].sort((a, b) => 
                 new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora)
             );
@@ -553,6 +743,7 @@
         }
 
         function formatarData(dataStr) {
+            if (!dataStr) return '-';
             const [ano, mes, dia] = dataStr.split('-');
             return `${dia}/${mes}/${ano}`;
         }
@@ -565,25 +756,6 @@
             setTimeout(() => {
                 notif.classList.remove('show');
             }, 3000);
-        }
-
-        // Integração com Google Sheets (requer configuração adicional)
-        function exportToSheets() {
-            // Aqui você implementaria a integração com Google Sheets API
-            // Por enquanto, exporta como CSV
-            let csv = 'Lote,Cor,Correção,Solicitante,Responsável,Data,Hora\n';
-            
-            correcoes.forEach(c => {
-                csv += `"${c.lote}","${c.cor}","${c.correcao}","${c.solicitante}","${c.responsavel}","${c.data}","${c.hora}"\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `correcoes_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-            
-            showNotification('Dados exportados para CSV! Configure a integração com Google Sheets.', 'success');
         }
 
         // Pesquisa em tempo real
