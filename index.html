@@ -442,7 +442,7 @@
     <div id="notification" class="notification"></div>
 
     <script>
-        // CONFIGURAÇÃO - SUBSTITUA PELA SUA URL DO APPS SCRIPT
+        // SUA URL DO GOOGLE APPS SCRIPT
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGJhdgCi9_lXTRkse5Uy2GoG5ha1TQgnYfNPrXJazpLV9bJZxByHfDjvFhRwhXPRFM-Q/exec';
         
         let correcoes = [];
@@ -460,15 +460,24 @@
             
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=get`);
-                correcoes = await response.json();
+                const data = await response.json();
+                
+                // Verificar se é array
+                if (Array.isArray(data)) {
+                    correcoes = data;
+                } else {
+                    correcoes = [];
+                }
                 
                 atualizarEstatisticas();
                 atualizarTabela(correcoes);
                 inicializarGrafico();
                 showNotification('Dados carregados com sucesso!', 'success');
             } catch (error) {
-                console.error('Erro:', error);
-                showNotification('Erro ao carregar dados. Recarregue a página.', 'error');
+                console.error('Erro detalhado:', error);
+                showNotification('Erro ao carregar dados. Verifique a conexão.', 'error');
+                document.getElementById('resultadosBody').innerHTML = 
+                    '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #e74c3c;">Erro ao carregar dados. Tente recarregar a página.</td></tr>';
             }
         }
 
@@ -502,11 +511,11 @@
                     document.getElementById('data').valueAsDate = new Date();
                     await carregarDados();
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Erro desconhecido');
                 }
             } catch (error) {
-                console.error('Erro:', error);
-                showNotification('Erro ao salvar. Tente novamente.', 'error');
+                console.error('Erro ao salvar:', error);
+                showNotification('Erro ao salvar: ' + error.message, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '💾 Salvar Correção';
@@ -524,7 +533,7 @@
             
             const corCount = {};
             correcoes.forEach(c => {
-                corCount[c.cor] = (corCount[c.cor] || 0) + 1;
+                if (c.cor) corCount[c.cor] = (corCount[c.cor] || 0) + 1;
             });
             const corMaisCorrecoes = Object.keys(corCount).reduce((a, b) => 
                 corCount[a] > corCount[b] ? a : b, '-');
@@ -536,7 +545,7 @@
             
             const corCount = {};
             correcoes.forEach(c => {
-                corCount[c.cor] = (corCount[c.cor] || 0) + 1;
+                if (c.cor) corCount[c.cor] = (corCount[c.cor] || 0) + 1;
             });
 
             const coresPadrao = {
@@ -552,6 +561,11 @@
 
             if (chart) {
                 chart.destroy();
+            }
+
+            if (labels.length === 0) {
+                // Mostrar mensagem quando não há dados
+                return;
             }
 
             chart = new Chart(ctx, {
@@ -591,20 +605,22 @@
                 return;
             }
             
-            const dadosOrdenados = [...dados].sort((a, b) => 
-                new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora)
-            );
+            const dadosOrdenados = [...dados].sort((a, b) => {
+                const dateA = new Date((a.data || '1970-01-01') + 'T' + (a.hora || '00:00'));
+                const dateB = new Date((b.data || '1970-01-01') + 'T' + (b.hora || '00:00'));
+                return dateB - dateA;
+            });
             
             dadosOrdenados.forEach(c => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td><strong>${c.lote}</strong></td>
-                    <td><span class="color-badge color-${c.cor}">${c.cor}</span></td>
-                    <td>${c.correcao}</td>
-                    <td>${c.solicitante}</td>
-                    <td>${c.responsavel}</td>
+                    <td><strong>${c.lote || '-'}</strong></td>
+                    <td><span class="color-badge color-${c.cor}">${c.cor || '-'}</span></td>
+                    <td>${c.correcao || '-'}</td>
+                    <td>${c.solicitante || '-'}</td>
+                    <td>${c.responsavel || '-'}</td>
                     <td>${formatarData(c.data)}</td>
-                    <td>${c.hora}</td>
+                    <td>${c.hora || '-'}</td>
                 `;
             });
         }
@@ -618,11 +634,11 @@
             }
             
             const resultados = correcoes.filter(c => 
-                c.lote.toLowerCase().includes(termo) ||
-                c.cor.toLowerCase().includes(termo) ||
-                c.solicitante.toLowerCase().includes(termo) ||
-                c.responsavel.toLowerCase().includes(termo) ||
-                c.correcao.toLowerCase().includes(termo)
+                (c.lote && c.lote.toLowerCase().includes(termo)) ||
+                (c.cor && c.cor.toLowerCase().includes(termo)) ||
+                (c.solicitante && c.solicitante.toLowerCase().includes(termo)) ||
+                (c.responsavel && c.responsavel.toLowerCase().includes(termo)) ||
+                (c.correcao && c.correcao.toLowerCase().includes(termo))
             );
             
             atualizarTabela(resultados);
@@ -634,14 +650,12 @@
 
         function formatarData(dataStr) {
             if (!dataStr) return '-';
-            if (typeof dataStr === 'object' && dataStr instanceof Date) {
-                const dia = String(dataStr.getDate()).padStart(2, '0');
-                const mes = String(dataStr.getMonth() + 1).padStart(2, '0');
-                const ano = dataStr.getFullYear();
+            const str = String(dataStr);
+            if (str.includes('-')) {
+                const [ano, mes, dia] = str.split('-');
                 return `${dia}/${mes}/${ano}`;
             }
-            const [ano, mes, dia] = String(dataStr).split('-');
-            return `${dia}/${mes}/${ano}`;
+            return str;
         }
 
         function showNotification(mensagem, tipo) {
