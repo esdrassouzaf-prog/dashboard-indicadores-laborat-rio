@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Indicadores - Laboratório</title>
+    <title>Dashboard - Controle de Correções | Desenvolvimento de Tintas</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -12,947 +12,471 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary: #1e3a8a;
-            --primary-light: #3b82f6;
-            --secondary: #f59e0b;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f97316;
-            --info: #06b6d4;
-            --bg: #f3f4f6;
-            --card: #ffffff;
-            --text: #1f2937;
-            --border: #e5e7eb;
-        }
-
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
-            color: var(--text);
-            padding: 20px;
+            color: #333;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
 
         header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
             padding: 20px;
-        }
-
-        .logo-container {
-            margin-bottom: 20px;
-        }
-
-        .logo-container img {
-            max-height: 100px;
-            max-width: 250px;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
-            border-radius: 10px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .connection-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.offline {
-            background: var(--danger);
-            animation: none;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            border-radius: 15px;
             margin-bottom: 30px;
-        }
-
-        @media (max-width: 1200px) {
-            .kpi-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 600px) {
-            .kpi-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .kpi-card {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .kpi-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-        }
-
-        .kpi-card.aprovacao::before { background: var(--success); }
-        .kpi-card.reprovacao::before { background: var(--danger); }
-        .kpi-card.analises::before { background: var(--primary); }
-        .kpi-card.lotes::before { background: var(--info); }
-        .kpi-card.responsaveis::before { background: var(--warning); }
-
-        .kpi-header {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            justify-content: space-between;
         }
 
-        .kpi-title {
-            font-size: 0.9rem;
-            color: #6b7280;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
-        .kpi-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .kpi-card.aprovacao .kpi-icon { background: #d1fae5; }
-        .kpi-card.reprovacao .kpi-icon { background: #fee2e2; }
-        .kpi-card.analises .kpi-icon { background: #dbeafe; }
-        .kpi-card.lotes .kpi-icon { background: #cffafe; }
-        .kpi-card.responsaveis .kpi-icon { background: #ffedd5; }
-
-        .kpi-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--text);
+        .header-text h1 {
+            color: #2c3e50;
+            font-size: 28px;
             margin-bottom: 5px;
         }
 
-        .kpi-subtitle {
-            font-size: 0.85rem;
-            color: #6b7280;
+        .header-text p {
+            color: #7f8c8d;
+            font-size: 14px;
         }
 
-        .charts-grid {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 2fr;
             gap: 30px;
-            margin-bottom: 30px;
         }
 
-        @media (max-width: 968px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .chart-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .chart-card h3 {
-            color: var(--primary);
+        .card h2 {
+            color: #2c3e50;
             margin-bottom: 20px;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 20px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
         }
 
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-
-        .table-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        .table-card h3 {
-            color: var(--primary);
+        .form-group {
             margin-bottom: 20px;
-            font-size: 1.2rem;
         }
 
-        .data-table {
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
             width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table th {
-            background: var(--primary);
-            color: white;
             padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-
-        .data-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .data-table tr:hover {
-            background: #f9fafb;
-        }
-
-        .filter-bar {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .filter-group label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #6b7280;
-        }
-
-        .filter-group input, .filter-group select {
-            padding: 10px 15px;
-            border: 2px solid var(--border);
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            font-size: 0.9rem;
-            min-width: 150px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         .btn {
-            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(30, 58, 138, 0.3);
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            display: none;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--success);
-            color: white;
-            padding: 16px 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.error {
-            background: var(--danger);
-        }
-
-        .config-section {
-            background: #f0f9ff;
-            border: 2px solid #bae6fd;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .config-section h3 {
-            color: #0369a1;
-            margin-bottom: 15px;
-        }
-
-        .saved-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--success);
-            font-size: 0.85rem;
+            font-size: 16px;
             font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
         }
 
-        .stats-box {
-            background: #f9fafb;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-top: 10px;
+        }
+
+        .search-section {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
         }
 
-        .stats-box .stat {
-            border-right: 1px solid var(--border);
-        }
-
-        .stats-box .stat:last-child {
-            border-right: none;
-        }
-
-        .stats-box .stat-value {
-            font-size: 1.8rem;
+        .stat-value {
+            font-size: 32px;
             font-weight: bold;
-            color: var(--primary);
+            margin-bottom: 5px;
         }
 
-        .stats-box .stat-label {
-            font-size: 0.85rem;
-            color: #6b7280;
-            margin-top: 5px;
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
         }
 
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f8f9fa;
             font-weight: 600;
+            color: #2c3e50;
         }
 
-        .badge-danger {
-            background: #fee2e2;
-            color: #991b1b;
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .color-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .color-AMARELO { background: #ffd700; color: #333; }
+        .color-AZUL { background: #0066cc; color: white; }
+        .color-BEJE { background: #f5f5dc; color: #333; border: 1px solid #ccc; }
+        .color-BRANCO { background: #ffffff; color: #333; border: 1px solid #ccc; }
+        .color-CHAMPANHE { background: #f7e7ce; color: #333; }
+        .color-CINZA { background: #808080; color: white; }
+        .color-LARANJA { background: #ff6600; color: white; }
+        .color-MARROM { background: #8b4513; color: white; }
+        .color-PRETO { background: #000000; color: white; }
+        .color-VERDE { background: #228b22; color: white; }
+        .color-VERMELHO { background: #dc143c; color: white; }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success { background: #27ae60; }
+        .notification.error { background: #e74c3c; }
+
+        .chart-container {
+            margin-top: 30px;
+            height: 300px;
+        }
+
+        @media (max-width: 968px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-
     <div class="container">
         <header>
-            <div class="logo-container">
-                <img src="https://i.imgur.com/9Uv6GTe.png" 
-                     alt="Logo Empresa" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <div style="display: none; font-size: 4rem;">📊</div>
+            <div class="logo-section">
+                <div class="logo">LAB</div>
+                <div class="header-text">
+                    <h1>Sistema de Controle de Correções</h1>
+                    <p>Laboratório de Desenvolvimento de Tintas</p>
+                </div>
             </div>
-            <h1>Dashboard de Indicadores</h1>
-            <p class="subtitle">Laboratório - Controle de Qualidade</p>
-            <div class="connection-status" id="connectionStatus">
-                <span class="status-dot offline" id="statusDot"></span>
-                <span id="statusText">Desconectado</span>
+            <div>
+                <button class="btn" onclick="exportToSheets()" style="width: auto; padding: 10px 20px; font-size: 14px;">
+                    📊 Exportar para Google Sheets
+                </button>
             </div>
         </header>
 
-        <!-- Configuração -->
-        <div class="config-section" id="configSection">
-            <h3>⚙️ Configuração do Data Source</h3>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: end;">
-                <div class="filter-group">
-                    <label>URL do Script</label>
-                    <input type="text" id="scriptUrl" placeholder="Cole a URL do Apps Script..." style="width: 400px;">
-                </div>
-                <button class="btn btn-primary" onclick="salvarConfig()">
-                    💾 Salvar Configuração
-                </button>
-                <span class="saved-indicator" id="savedIndicator" style="display: none;">
-                    ✅ Configurado
-                </span>
-            </div>
-        </div>
-
-        <!-- Filtros -->
-        <div class="filter-bar">
-            <div class="filter-group">
-                <label>Data Inicial</label>
-                <input type="date" id="filtroDataInicio">
-            </div>
-            <div class="filter-group">
-                <label>Data Final</label>
-                <input type="date" id="filtroDataFim">
-            </div>
-            <div class="filter-group">
-                <label>Responsável</label>
-                <select id="filtroResponsavel">
-                    <option value="">Todos</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" onclick="atualizarDashboard()">
-                🔄 Atualizar
-            </button>
-        </div>
-
-        <!-- KPIs -->
-        <div class="kpi-grid">
-            <div class="kpi-card aprovacao">
-                <div class="kpi-header">
-                    <span class="kpi-title">Taxa de Aprovação</span>
-                    <div class="kpi-icon">✅</div>
-                </div>
-                <div class="kpi-value" id="kpiAprovacao">0%</div>
-                <div class="kpi-subtitle">Análises dentro da especificação</div>
-            </div>
-
-            <div class="kpi-card reprovacao">
-                <div class="kpi-header">
-                    <span class="kpi-title">Taxa de Reprovação</span>
-                    <div class="kpi-icon">❌</div>
-                </div>
-                <div class="kpi-value" id="kpiReprovacao">0%</div>
-                <div class="kpi-subtitle">Análises fora da especificação</div>
-            </div>
-
-            <div class="kpi-card analises">
-                <div class="kpi-header">
-                    <span class="kpi-title">Total de Análises</span>
-                    <div class="kpi-icon">🧪</div>
-                </div>
-                <div class="kpi-value" id="kpiTotalAnalises">0</div>
-                <div class="kpi-subtitle">No período selecionado</div>
-            </div>
-
-            <div class="kpi-card lotes">
-                <div class="kpi-header">
-                    <span class="kpi-title">Lotes Analisados</span>
-                    <div class="kpi-icon">📦</div>
-                </div>
-                <div class="kpi-value" id="kpiLotes">0</div>
-                <div class="kpi-subtitle" id="kpiMediaCaixas">Média: 0 análises/lote</div>
-            </div>
-        </div>
-
-        <!-- Gráficos -->
-        <div class="charts-grid">
-            <!-- Gráfico 1: Evolução por Data -->
-            <div class="chart-card">
-                <h3>📈 Evolução de Aprovação/Reprovação por Data</h3>
-                <div class="chart-container">
-                    <canvas id="chartEvolucao"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico 2: Análise por Teste -->
-            <div class="chart-card">
-                <h3>🧪 Análise por Tipo de Teste</h3>
-                <div class="filter-group" style="margin-bottom: 15px;">
-                    <label>Selecione o Teste</label>
-                    <select id="filtroTeste" onchange="atualizarGraficoTeste()">
-                        <option value="cor">Teste de Cor</option>
-                        <option value="brilho">Teste de Brilho</option>
-                        <option value="camada">Teste de Camada</option>
-                        <option value="impacto">Teste de Impacto</option>
-                        <option value="mandril">Teste de Mandril</option>
-                        <option value="grade">Teste de Grade</option>
-                        <option value="peneira">Teste de Peneira</option>
-                        <option value="mek">Teste de MEK</option>
-                    </select>
-                </div>
-                <div class="stats-box" id="statsTeste">
-                    <div class="stat">
-                        <div class="stat-value" id="statMedia">0</div>
-                        <div class="stat-label">Média por Lote</div>
+        <div class="grid">
+            <!-- Formulário de Registro -->
+            <div class="card">
+                <h2>📝 Nova Correção</h2>
+                <form id="correcaoForm">
+                    <div class="form-group">
+                        <label for="lote">Número do Lote *</label>
+                        <input type="text" id="lote" required placeholder="Ex: LOTE-2024-001">
                     </div>
-                    <div class="stat">
-                        <div class="stat-value" id="statTotal">0</div>
-                        <div class="stat-label">Total Análises</div>
+
+                    <div class="form-group">
+                        <label for="cor">Cor *</label>
+                        <select id="cor" required>
+                            <option value="">Selecione a cor...</option>
+                            <option value="AMARELO">Amarelo</option>
+                            <option value="AZUL">Azul</option>
+                            <option value="BEJE">Beje</option>
+                            <option value="BRANCO">Branco</option>
+                            <option value="CHAMPANHE">Champanhe</option>
+                            <option value="CINZA">Cinza</option>
+                            <option value="LARANJA">Laranja</option>
+                            <option value="MARROM">Marrom</option>
+                            <option value="PRETO">Preto</option>
+                            <option value="VERDE">Verde</option>
+                            <option value="VERMELHO">Vermelho</option>
+                        </select>
                     </div>
-                    <div class="stat">
-                        <div class="stat-value" id="statLotes">0</div>
-                        <div class="stat-label">Lotes com Teste</div>
+
+                    <div class="form-group">
+                        <label for="correcao">Descrição da Correção *</label>
+                        <textarea id="correcao" rows="3" required placeholder="Descreva a correção solicitada..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="solicitante">Solicitado por *</label>
+                        <input type="text" id="solicitante" required placeholder="Nome do solicitante">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="responsavel">Responsável *</label>
+                        <input type="text" id="responsavel" required placeholder="Nome do responsável">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data">Data *</label>
+                        <input type="date" id="data" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hora">Hora *</label>
+                        <input type="time" id="hora" required>
+                    </div>
+
+                    <button type="submit" class="btn">💾 Salvar Correção</button>
+                </form>
+            </div>
+
+            <!-- Dashboard e Pesquisa -->
+            <div>
+                <!-- Estatísticas -->
+                <div class="card" style="margin-bottom: 30px;">
+                    <h2>📊 Estatísticas Gerais</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalCorrecoes">0</div>
+                            <div class="stat-label">Total de Correções</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalLotes">0</div>
+                            <div class="stat-label">Lotes em Desenvolvimento</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="mediaTempo">0h</div>
+                            <div class="stat-label">Tempo Médio por Lote</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="corMaisCorrecoes">-</div>
+                            <div class="stat-label">Cor com Mais Correções</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="correcoesChart"></canvas>
                     </div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="chartTeste"></canvas>
+
+                <!-- Pesquisa -->
+                <div class="card">
+                    <h2>🔍 Pesquisar Correções</h2>
+                    <div class="search-section">
+                        <input type="text" id="searchInput" placeholder="Pesquisar por lote, cor, solicitante...">
+                        <button class="btn btn-secondary" onclick="pesquisar()">Pesquisar</button>
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table id="resultadosTable">
+                            <thead>
+                                <tr>
+                                    <th>Lote</th>
+                                    <th>Cor</th>
+                                    <th>Correção</th>
+                                    <th>Solicitante</th>
+                                    <th>Responsável</th>
+                                    <th>Data</th>
+                                    <th>Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultadosBody">
+                                <!-- Resultados serão inseridos aqui -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-
-            <!-- Gráfico 3: Análises por Período -->
-            <div class="chart-card">
-                <h3>📊 Análises por Período</h3>
-                <div class="filter-group" style="margin-bottom: 15px;">
-                    <label>Agrupar por</label>
-                    <select id="filtroPeriodo" onchange="atualizarGraficoPeriodo()">
-                        <option value="dia">Dia</option>
-                        <option value="semana">Semana</option>
-                        <option value="mes" selected>Mês</option>
-                    </select>
-                </div>
-                <div class="chart-container">
-                    <canvas id="chartPeriodo"></canvas>
-                </div>
-            </div>
-
-            <!-- Gráfico 4: Ranking de Responsáveis -->
-            <div class="chart-card">
-                <h3>👥 Análises por Responsável</h3>
-                <div class="chart-container">
-                    <canvas id="chartResponsaveis"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabela de Lotes/Cor -->
-        <div class="table-card">
-            <h3>📋 Lotes por Cor - Quantidade e Total de Análises</h3>
-            <table class="data-table" id="tabelaLotesCor">
-                <thead>
-                    <tr>
-                        <th>Cor</th>
-                        <th>Quantidade de Lotes</th>
-                        <th>Total de Análises</th>
-                        <th>Média de Análises/Lote</th>
-                        <th>Taxa de Aprovação</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: #6b7280;">
-                            Carregue os dados para visualizar
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Tabela de Lotes Problemáticos -->
-        <div class="table-card">
-            <h3>⚠️ Lotes com Mais Desvios</h3>
-            <table class="data-table" id="tabelaLotesProblematicos">
-                <thead>
-                    <tr>
-                        <th>Lote</th>
-                        <th>Cor</th>
-                        <th>Total Análises</th>
-                        <th>Desvios</th>
-                        <th>Taxa Reprovação</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: #6b7280;">
-                            Carregue os dados para visualizar
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <div id="notification" class="notification"></div>
 
     <script>
-        const SCRIPT_URL_KEY = 'indicadores_script_url';
-        let SCRIPT_URL = localStorage.getItem(SCRIPT_URL_KEY) || '';
-        let analisesData = [];
-        let lotesData = [];
-        let charts = {};
-        let dadosFiltrados = [];
+        // Dados armazenados localmente (simulando até integração com Google Sheets)
+        let correcoes = JSON.parse(localStorage.getItem('correcoes')) || [];
+        let chart;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (SCRIPT_URL) {
-                document.getElementById('scriptUrl').value = SCRIPT_URL;
-                document.getElementById('savedIndicator').style.display = 'inline-flex';
-                document.getElementById('configSection').style.display = 'none';
-                carregarDados();
-            }
-            
-            const hoje = new Date();
-            const trintaDiasAtras = new Date(hoje.getTime() - (30 * 24 * 60 * 60 * 1000));
-            document.getElementById('filtroDataFim').valueAsDate = hoje;
-            document.getElementById('filtroDataInicio').valueAsDate = trintaDiasAtras;
-        });
-
-        function salvarConfig() {
-            const url = document.getElementById('scriptUrl').value.trim();
-            if (!url) {
-                showToast('Digite a URL do script!', true);
-                return;
-            }
-            SCRIPT_URL = url;
-            localStorage.setItem(SCRIPT_URL_KEY, url);
-            document.getElementById('savedIndicator').style.display = 'inline-flex';
-            showToast('✅ Configuração salva!');
-            carregarDados();
-        }
-
-        async function carregarDados() {
-            if (!SCRIPT_URL) {
-                showToast('Configure a URL primeiro!', true);
-                return;
-            }
-
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            
-            try {
-                const respAnalises = await fetch(`${SCRIPT_URL}?action=getAnalises`);
-                const dataAnalises = await respAnalises.json();
-                
-                if (dataAnalises.success) {
-                    analisesData = dataAnalises.data;
-                }
-
-                const respLotes = await fetch(`${SCRIPT_URL}?action=getLotes`);
-                const dataLotes = await respLotes.json();
-                
-                if (dataLotes.success) {
-                    lotesData = dataLotes.data;
-                }
-
-                const responsaveis = [...new Set(analisesData.map(a => a.responsavel))].filter(r => r);
-                const selectResp = document.getElementById('filtroResponsavel');
-                selectResp.innerHTML = '<option value="">Todos</option>';
-                responsaveis.forEach(r => {
-                    selectResp.innerHTML += `<option value="${r}">${r}</option>`;
-                });
-
-                updateConnectionStatus(true);
-                atualizarDashboard();
-                showToast(`✅ ${analisesData.length} análises carregadas`);
-                
-            } catch (error) {
-                console.error('Erro:', error);
-                showToast('❌ Erro ao carregar dados', true);
-                updateConnectionStatus(false);
-            } finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
-            }
-        }
-
-        function updateConnectionStatus(connected) {
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            if (connected) {
-                dot.classList.remove('offline');
-                text.textContent = 'Conectado';
-            } else {
-                dot.classList.add('offline');
-                text.textContent = 'Desconectado';
-            }
-        }
-
-        function filtrarDados() {
-            const dataInicio = document.getElementById('filtroDataInicio').value;
-            const dataFim = document.getElementById('filtroDataFim').value;
-            const responsavel = document.getElementById('filtroResponsavel').value;
-
-            return analisesData.filter(a => {
-                if (dataInicio && a.data < dataInicio) return false;
-                if (dataFim && a.data > dataFim) return false;
-                if (responsavel && a.responsavel !== responsavel) return false;
-                return true;
-            });
-        }
-
-        function calcularStatus(analise, lote) {
-            const desvios = [];
-            const corVal = parseFloat(analise.testes.cor);
-            if (!isNaN(corVal) && corVal > 2.0) desvios.push('Cor');
-            
-            if (lote) {
-                const brilhoVal = parseFloat(analise.testes.brilho);
-                const brilhoTipo = lote.brilho.toUpperCase();
-                if (!isNaN(brilhoVal)) {
-                    if (brilhoTipo === 'BRILHANTE' && brilhoVal <= 90) desvios.push('Brilho');
-                    else if (brilhoTipo === 'SEMI BRILHO' && (brilhoVal < 40 || brilhoVal > 80)) desvios.push('Brilho');
-                    else if (brilhoTipo === 'FOSCO' && brilhoVal > 15) desvios.push('Brilho');
-                }
-                
-                const camadaVal = parseFloat(analise.testes.camada);
-                const supTipo = lote.superficie.toUpperCase();
-                if (!isNaN(camadaVal)) {
-                    if (supTipo === 'LISO' && (camadaVal < 60 || camadaVal > 90)) desvios.push('Camada');
-                    else if (supTipo === 'TEXTURIZADO' && (camadaVal < 80 || camadaVal > 120)) desvios.push('Camada');
-                    else if (supTipo === 'MICROTEXTURA' && (camadaVal < 70 || camadaVal > 100)) desvios.push('Camada');
-                }
-            }
-            return { aprovado: desvios.length === 0, desvios };
-        }
-
-        function atualizarDashboard() {
-            dadosFiltrados = filtrarDados();
-            
-            if (dadosFiltrados.length === 0) {
-                showToast('Nenhum dado encontrado para o período/filtro selecionado', true);
-                return;
-            }
-
-            let totalAprovados = 0;
-            let totalReprovados = 0;
-            
-            // CORREÇÃO: Pegar TODOS os lotes da planilha de lotes, não só os com análises
-            const todosLotes = new Set(lotesData.map(l => l.lote));
-            const lotesComAnalise = new Set(dadosFiltrados.map(a => a.lote));
-            
-            const analisesPorLote = {};
-            const analisesPorResponsavel = {};
-            const analisesPorData = {};
-            const dadosPorCor = {};
-
-            dadosFiltrados.forEach(a => {
-                const lote = lotesData.find(l => l.lote === a.lote);
-                const status = calcularStatus(a, lote);
-                
-                if (status.aprovado) totalAprovados++;
-                else totalReprovados++;
-                
-                if (!analisesPorLote[a.lote]) {
-                    analisesPorLote[a.lote] = { analises: [], desvios: 0 };
-                }
-                analisesPorLote[a.lote].analises.push(a);
-                if (!status.aprovado) analisesPorLote[a.lote].desvios++;
-                
-                analisesPorResponsavel[a.responsavel] = (analisesPorResponsavel[a.responsavel] || 0) + 1;
-                
-                // Agrupar por data (apenas data, sem hora)
-                const dataKey = a.data;
-                if (!analisesPorData[dataKey]) {
-                    analisesPorData[dataKey] = { total: 0, aprov: 0 };
-                }
-                analisesPorData[dataKey].total++;
-                if (status.aprovado) analisesPorData[dataKey].aprov++;
-                
-                // Dados por cor - Contar quantidade de análises
-                if (lote) {
-                    const cor = lote.cor;
-                    if (!dadosPorCor[cor]) {
-                        dadosPorCor[cor] = { lotes: new Set(), totalAnalises: 0, aprovados: 0, total: 0 };
-                    }
-                    dadosPorCor[cor].lotes.add(a.lote);
-                    dadosPorCor[cor].totalAnalises++;
-                    dadosPorCor[cor].total++;
-                    if (status.aprovado) dadosPorCor[cor].aprovados++;
-                }
-            });
-
-            const total = dadosFiltrados.length;
-            const taxaAprovacao = total > 0 ? ((totalAprovados / total) * 100).toFixed(1) : 0;
-            const taxaReprovacao = total > 0 ? ((totalReprovados / total) * 100).toFixed(1) : 0;
-            
-            document.getElementById('kpiAprovacao').textContent = taxaAprovacao + '%';
-            document.getElementById('kpiReprovacao').textContent = taxaReprovacao + '%';
-            document.getElementById('kpiTotalAnalises').textContent = total;
-            
-            // CORREÇÃO: Mostrar todos os lotes cadastrados, com indicador de quantos têm análise
-            document.getElementById('kpiLotes').textContent = todosLotes.size;
-            document.getElementById('kpiMediaCaixas').textContent = `${lotesComAnalise.size} com análise de ${todosLotes.size} cadastrados`;
-
-            atualizarGraficos(analisesPorData, analisesPorResponsavel);
-            atualizarGraficoTeste();
-            atualizarGraficoPeriodo();
-            atualizarTabelaLotesCor(dadosPorCor);
-            atualizarTabelaLotesProblematicos(analisesPorLote);
-        }
-
-        function atualizarGraficos(dadosPorData, dadosResp) {
-            Object.values(charts).forEach(c => c.destroy());
-            
-            // Gráfico de evolução por data
-            const datas = Object.keys(dadosPorData).sort();
-            const ctxEvolucao = document.getElementById('chartEvolucao').getContext('2d');
-            charts.evolucao = new Chart(ctxEvolucao, {
-                type: 'line',
-                data: {
-                    labels: datas.map(d => formatarData(d)),
-                    datasets: [{
-                        label: 'Taxa de Aprovação (%)',
-                        data: datas.map(d => {
-                            const item = dadosPorData[d];
-                            return ((item.aprov / item.total) * 100).toFixed(1);
-                        }),
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }, {
-                        label: 'Total Análises',
-                        data: datas.map(d => dadosPorData[d].total),
-                        borderColor: '#ef4444',
-                        backgroundColor: 'transparent',
-                        yAxisID: 'y1',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    scales: {
-                        y: { beginAtZero: true, max: 100, title: { display: true, text: '% Aprovação' } },
-                        y1: { position: 'right', beginAtZero: true, title: { display: true, text: 'Quantidade' } }
-                    }
-                }
-            });
-
-            // Ranking de responsáveis
-            const respOrdenado = Object.entries(dadosResp).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            const ctxResp = document.getElementById('chartResponsaveis').getContext('2d');
-            charts.responsaveis = new Chart(ctxResp, {
-                type: 'bar',
-                data: {
-                    labels: respOrdenado.map(r => r[0].split(' ')[0]),
-                    datasets: [{
-                        label: 'Análises Realizadas',
-                        data: respOrdenado.map(r => r[1]),
-                        backgroundColor: '#3b82f6'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y'
-                }
-            });
-        }
-
-        function atualizarGraficoTeste() {
-            const testeSelecionado = document.getElementById('filtroTeste').value;
-            const valoresPorLote = {};
-            const contagemPorLote = {};
-            
-            dadosFiltrados.forEach(a => {
-                const val = parseFloat(a.testes[testeSelecionado]);
-                if (!isNaN(val)) {
-                    if (!valoresPorLote[a.lote]) {
-                        valoresPorLote[a.lote] = 0;
-                        contagemPorLote[a.lote] = 0;
-                    }
-                    valoresPorLote[a.lote] += val;
-                    contagemPorLote[a.lote]++;
-                }
-            });
-            
-            const medias = Object.keys(valoresPorLote).map(lote => ({
-                lote,
-                media: (valoresPorLote[lote] / contagemPorLote[lote]).toFixed(2)
-            })).sort((a, b) => b.media - a.media).slice(0, 10);
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Definir data atual
+            document.getElementById('data').valueAsDate = new Date();
             
             // Atualizar estatísticas
-            const totalLotes = Object.keys(valoresPorLote).length;
-            const mediaGeral = totalLotes > 0 ? 
-                (Object.values(valoresPorLote).reduce((a, b) => a + b, 0) / 
-                 Object.values(contagemPorLote).reduce((a, b) => a + b, 0)).toFixed(2) : 0;
+            atualizarEstatisticas();
             
-            document.getElementById('statMedia').textContent = mediaGeral;
-            document.getElementById('statTotal').textContent = dadosFiltrados.filter(a => a.testes[testeSelecionado]).length;
-            document.getElementById('statLotes').textContent = totalLotes;
+            // Inicializar gráfico
+            inicializarGrafico();
             
-            // Atualizar gráfico
-            if (charts.teste) charts.teste.destroy();
+            // Carregar dados iniciais na tabela
+            atualizarTabela(correcoes);
+        });
+
+        // Formulário de submissão
+        document.getElementById('correcaoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            const ctxTeste = document.getElementById('chartTeste').getContext('2d');
-            charts.teste = new Chart(ctxTeste, {
+            const novaCorrecao = {
+                id: Date.now(),
+                lote: document.getElementById('lote').value.toUpperCase(),
+                cor: document.getElementById('cor').value,
+                correcao: document.getElementById('correcao').value,
+                solicitante: document.getElementById('solicitante').value,
+                responsavel: document.getElementById('responsavel').value,
+                data: document.getElementById('data').value,
+                hora: document.getElementById('hora').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            correcoes.push(novaCorrecao);
+            localStorage.setItem('correcoes', JSON.stringify(correcoes));
+            
+            showNotification('Correção registrada com sucesso!', 'success');
+            
+            // Limpar formulário
+            this.reset();
+            document.getElementById('data').valueAsDate = new Date();
+            
+            // Atualizar dashboard
+            atualizarEstatisticas();
+            atualizarTabela(correcoes);
+            atualizarGrafico();
+        });
+
+        function atualizarEstatisticas() {
+            // Total de correções
+            document.getElementById('totalCorrecoes').textContent = correcoes.length;
+            
+            // Total de lotes únicos
+            const lotesUnicos = [...new Set(correcoes.map(c => c.lote))];
+            document.getElementById('totalLotes').textContent = lotesUnicos.length;
+            
+            // Cor com mais correções
+            const corCount = {};
+            correcoes.forEach(c => {
+                corCount[c.cor] = (corCount[c.cor] || 0) + 1;
+            });
+            const corMaisCorrecoes = Object.keys(corCount).reduce((a, b) => 
+                corCount[a] > corCount[b] ? a : b, '-');
+            document.getElementById('corMaisCorrecoes').textContent = corMaisCorrecoes;
+            
+            // Tempo médio (simplificado - pode ser ajustado conforme necessidade)
+            // Aqui você pode implementar lógica mais complexa baseada em datas de início e fim
+            document.getElementById('mediaTempo').textContent = 'Calc...';
+        }
+
+        function inicializarGrafico() {
+            const ctx = document.getElementById('correcoesChart').getContext('2d');
+            
+            const corCount = {};
+            correcoes.forEach(c => {
+                corCount[c.cor] = (corCount[c.cor] || 0) + 1;
+            });
+            
+            chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: medias.map(m => m.lote),
+                    labels: Object.keys(corCount),
                     datasets: [{
-                        label: `Média de ${testeSelecionado.toUpperCase()}`,
-                        data: medias.map(m => m.media),
-                        backgroundColor: '#3b82f6'
+                        label: 'Correções por Cor',
+                        data: Object.values(corCount),
+                        backgroundColor: [
+                            '#ffd700', '#0066cc', '#f5f5dc', '#ffffff', 
+                            '#f7e7ce', '#808080', '#ff6600', '#8b4513', 
+                            '#000000', '#228b22', '#dc143c'
+                        ],
+                        borderColor: '#333',
+                        borderWidth: 1
                     }]
                 },
                 options: {
@@ -960,135 +484,114 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
                     }
                 }
             });
         }
 
-        function atualizarGraficoPeriodo() {
-            const agrupamento = document.getElementById('filtroPeriodo').value;
-            const dadosAgrupados = {};
-            
-            dadosFiltrados.forEach(a => {
-                let chave;
-                const data = new Date(a.data);
-                
-                if (agrupamento === 'dia') {
-                    chave = a.data;
-                } else if (agrupamento === 'semana') {
-                    const semana = getSemanaAno(data);
-                    chave = `Sem ${semana}`;
-                } else { // mes
-                    chave = `${data.getMonth() + 1}/${data.getFullYear()}`;
-                }
-                
-                dadosAgrupados[chave] = (dadosAgrupados[chave] || 0) + 1;
+        function atualizarGrafico() {
+            const corCount = {};
+            correcoes.forEach(c => {
+                corCount[c.cor] = (corCount[c.cor] || 0) + 1;
             });
             
-            const chavesOrdenadas = Object.keys(dadosAgrupados).sort();
-            
-            if (charts.periodo) charts.periodo.destroy();
-            
-            const ctxPeriodo = document.getElementById('chartPeriodo').getContext('2d');
-            charts.periodo = new Chart(ctxPeriodo, {
-                type: 'bar',
-                data: {
-                    labels: chavesOrdenadas,
-                    datasets: [{
-                        label: 'Quantidade de Análises',
-                        data: chavesOrdenadas.map(k => dadosAgrupados[k]),
-                        backgroundColor: '#10b981'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
+            chart.data.labels = Object.keys(corCount);
+            chart.data.datasets[0].data = Object.values(corCount);
+            chart.update();
         }
 
-        function getSemanaAno(date) {
-            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            const dayNum = d.getUTCDay() || 7;
-            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        }
-
-        function atualizarTabelaLotesCor(dadosPorCor) {
-            const tbody = document.querySelector('#tabelaLotesCor tbody');
+        function atualizarTabela(dados) {
+            const tbody = document.getElementById('resultadosBody');
+            tbody.innerHTML = '';
             
-            const dadosArray = Object.entries(dadosPorCor).map(([cor, dados]) => ({
-                cor,
-                qtdLotes: dados.lotes.size,
-                totalAnalises: dados.totalAnalises,
-                mediaAnalises: (dados.totalAnalises / dados.lotes.size).toFixed(1),
-                taxaAprov: ((dados.aprovados / dados.total) * 100).toFixed(1)
-            })).sort((a, b) => b.qtdLotes - a.qtdLotes);
+            // Ordenar por data mais recente
+            const dadosOrdenados = [...dados].sort((a, b) => 
+                new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora)
+            );
             
-            if (dadosArray.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado encontrado</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = dadosArray.map(item => `
-                <tr>
-                    <td><strong>${item.cor}</strong></td>
-                    <td>${item.qtdLotes}</td>
-                    <td>${item.totalAnalises}</td>
-                    <td>${item.mediaAnalises}</td>
-                    <td>${item.taxaAprov}%</td>
-                </tr>
-            `).join('');
-        }
-
-        function atualizarTabelaLotesProblematicos(analisesPorLote) {
-            const tbody = document.querySelector('#tabelaLotesProblematicos tbody');
-            
-            const lotesArray = Object.entries(analisesPorLote)
-                .map(([lote, data]) => {
-                    const taxaReprov = (data.desvios / data.analises.length * 100).toFixed(1);
-                    return { lote, ...data, taxaReprov };
-                })
-                .filter(l => l.desvios > 0)
-                .sort((a, b) => b.taxaReprov - a.taxaReprov)
-                .slice(0, 10);
-            
-            if (lotesArray.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum lote com desvios no período</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = lotesArray.map(item => {
-                const loteInfo = lotesData.find(l => l.lote === item.lote);
-                return `
-                    <tr>
-                        <td><strong>${item.lote}</strong></td>
-                        <td>${loteInfo ? loteInfo.cor : '-'}</td>
-                        <td>${item.analises.length}</td>
-                        <td>${item.desvios}</td>
-                        <td>${item.taxaReprov}%</td>
-                        <td><span class="badge badge-danger">Crítico</span></td>
-                    </tr>
+            dadosOrdenados.forEach(c => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${c.lote}</strong></td>
+                    <td><span class="color-badge color-${c.cor}">${c.cor}</span></td>
+                    <td>${c.correcao}</td>
+                    <td>${c.solicitante}</td>
+                    <td>${c.responsavel}</td>
+                    <td>${formatarData(c.data)}</td>
+                    <td>${c.hora}</td>
                 `;
-            }).join('');
+            });
+        }
+
+        function pesquisar() {
+            const termo = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!termo) {
+                atualizarTabela(correcoes);
+                return;
+            }
+            
+            const resultados = correcoes.filter(c => 
+                c.lote.toLowerCase().includes(termo) ||
+                c.cor.toLowerCase().includes(termo) ||
+                c.solicitante.toLowerCase().includes(termo) ||
+                c.responsavel.toLowerCase().includes(termo) ||
+                c.correcao.toLowerCase().includes(termo)
+            );
+            
+            atualizarTabela(resultados);
+            
+            if (resultados.length === 0) {
+                showNotification('Nenhum resultado encontrado', 'error');
+            }
         }
 
         function formatarData(dataStr) {
-            if (!dataStr) return '-';
             const [ano, mes, dia] = dataStr.split('-');
             return `${dia}/${mes}/${ano}`;
         }
 
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast show' + (isError ? ' error' : '');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+        function showNotification(mensagem, tipo) {
+            const notif = document.getElementById('notification');
+            notif.textContent = mensagem;
+            notif.className = `notification ${tipo} show`;
+            
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 3000);
         }
+
+        // Integração com Google Sheets (requer configuração adicional)
+        function exportToSheets() {
+            // Aqui você implementaria a integração com Google Sheets API
+            // Por enquanto, exporta como CSV
+            let csv = 'Lote,Cor,Correção,Solicitante,Responsável,Data,Hora\n';
+            
+            correcoes.forEach(c => {
+                csv += `"${c.lote}","${c.cor}","${c.correcao}","${c.solicitante}","${c.responsavel}","${c.data}","${c.hora}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `correcoes_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showNotification('Dados exportados para CSV! Configure a integração com Google Sheets.', 'success');
+        }
+
+        // Pesquisa em tempo real
+        document.getElementById('searchInput').addEventListener('input', function() {
+            if (this.value.length > 2 || this.value.length === 0) {
+                pesquisar();
+            }
+        });
     </script>
 </body>
 </html>
